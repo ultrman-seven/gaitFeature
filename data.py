@@ -12,7 +12,7 @@ def quaternion(quat):
 
 
 def rotate(vector,quat):
-    '''旋转'''
+    '''坐标系转换'''
     ro = []
     for i in range(0,len(vector)):
         vector[i].insert(0,0)
@@ -56,45 +56,31 @@ class InertialData:
     def __init__(self, filename):
             with open(filename,'r',encoding = "utf-8")as f_data:
                 lines = f_data.readlines()
-                self.acc,self.gyr,self.mag,quat = [],[],[],[]
+                acc,gyr,mag,quat = [],[],[],[]
                 for line in lines:
                     tmp = list(map(float,line.split()))
-                    self.acc.append(tmp[2:5])
-                    self.gyr.append(tmp[5:8])
-                    self.mag.append(tmp[8:11])
+                    acc.append(tmp[2:5])
+                    gyr.append(tmp[5:8])
+                    mag.append(tmp[8:11])
                     quat.append(tmp[11:15])
-                self.acc = rotate(self.acc,quat)
-                self.gyr = rotate(self.gyr,quat)
-                self.mag = rotate(self.mag,quat)
-
-    def filtering_acc(self):
-        self.acc = filtering(self.acc)
-
-    def filtering_gyr(self):
-        self.gyr = filtering(self.gyr)
-
-    def filtering_acc(self):
-        self.mag = filtering(self.mag)
+            self.data = {'acc':rotate(acc,quat),'gyr':rotate(gyr,quat),'mag':rotate(mag,quat)}
+    
+    def filtering(self,label):        
+        self.data[label] = filtering(self.data[label])
         
-    def get_gyr(self):
-        return self.gyr
+    def get(self,label):
+        return self.data[label]
 
-    def get_acc(self):
-        return self.acc
-
-    def get_mag(self):
-        return self.mag
-
-    def draw_acc(self):
-        accx,accy,accz = [],[],[]
-        for x,y,z in self.acc:
-            accx.append(x)
-            accy.append(y)
-            accz.append(z)
-        pl.figure('acc_x')
-        pl.plot(np.array(accx))
-        pl.figure('acc_y')
-        pl.plot(np.array(accy))
-        pl.figure('acc_z')
-        pl.plot(np.array(accz))
+    def draw(self,label):
+        x_axis,y_axis,z_axis = [],[],[]
+        for x,y,z in self.data[label]:
+            x_axis.append(x)
+            y_axis.append(y)
+            z_axis.append(z)
+        pl.figure(label + '_x')
+        pl.plot(np.array(x_axis))
+        pl.figure(label + '_y')
+        pl.plot(np.array(y_axis))
+        pl.figure(label + '_z')
+        pl.plot(np.array(z_axis))
         pl.show()
